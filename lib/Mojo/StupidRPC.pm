@@ -50,4 +50,13 @@ sub client ($class, $client_args, $session_args) {
   });
 }
 
+sub ws_client ($class, $url, $session_args, @ua_args) {
+  state $loaded = require Mojo::UserAgent;
+  Mojo::UserAgent->new(@ua_args)
+    ->websocket($url, sub ($ua, $tx) {
+        $class->from_websocket($tx, $session_args);
+      });
+  return;
+}
+
 1;
