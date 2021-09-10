@@ -38,14 +38,15 @@ sub handler_set ($class) {
   Mojo::StupidRPC::HandlerSet->new;
 }
 
-sub server ($class, $server_args, $session_args) {
-  Mojo::IOLoop->server($server_args => sub ($loop, $stream, $id) {
+sub server ($class, $args, $session_args) {
+  Mojo::IOLoop->server($args => sub ($loop, $stream, $id) {
     $class->from_stream($stream, $session_args);
   });
 }
 
-sub client ($class, $client_args, $session_args) {
-  Mojo::IOLoop->client($client_args => sub ($loop, $err, $stream) {
+sub client ($class, $args, $session_args) {
+  return $class->ws_client($args, $session_args) unless ref($args);
+  Mojo::IOLoop->client($args => sub ($loop, $err, $stream) {
     $class->from_stream($stream, $session_args);
   });
 }
