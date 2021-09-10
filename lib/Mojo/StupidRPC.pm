@@ -1,5 +1,6 @@
 package Mojo::StupidRPC;
 
+use Mojo::IOLoop;
 use Mojo::StupidRPC::Session;
 use Mojo::StupidRPC::HandlerSet;
 
@@ -35,6 +36,18 @@ sub from_websocket ($class, $tx, @args) {
 
 sub handler_set ($class) {
   Mojo::StupidRPC::HandlerSet->new;
+}
+
+sub server ($class, $server_args, $session_args) {
+  Mojo::IOLoop->server($server_args => sub ($loop, $stream, $id) {
+    $class->from_stream($stream, $session_args);
+  });
+}
+
+sub client ($class, $client_args, $session_args) {
+  Mojo::IOLoop->client($client_args => sub ($loop, $err, $stream) {
+    $class->from_stream($stream, $session_args);
+  });
 }
 
 1;
