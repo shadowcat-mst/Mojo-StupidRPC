@@ -5,15 +5,25 @@ use Mojo::StupidRPC::Base -role;
 has tag => undef;
 has session => undef, weak => 1;
 has request_complete => 0;
+has args => undef;
 
 requires 'store_type';
 requires '_send';
 
-sub type { 'call' }
+sub type ($proto) { (ref($proto) || $proto) =~ /[A-Z][a-z]+$/ }
+
+sub _register ($self) {
+  $self->session->${\$self->store_type}->{$self->tag} = $self;
+  $self
+}
+
+sub _unregister ($self) {
+  delete $self->session->${\$self->store_type}->{$self->tag};
+  $self
+}
 
 sub _request_completed ($self, @) {
-  delete $self->session->${\$self->store_type}->{$self->tag};
-  $self->request_complete(1);
+  $self->_unregister->request_complete(1);
 }
 
 sub data ($self, @data) {

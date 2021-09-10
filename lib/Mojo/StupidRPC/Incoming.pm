@@ -9,14 +9,15 @@ sub _send ($self, $type, @payload) {
 }
 
 sub start ($class, $session, $tag, $name, @args) {
-  my \%tags = $session->incoming;
-  die "Tag ${tag} in use" if $tags{$tag};
+  die "Tag ${tag} in use" if $session->incoming->{$tag};
   return $session->fail($class->type => undef)
     unless my $handler = $session->handlers->{$class->type}{$name};
-  $tags{$tag} = $class->new(session => $session, tag => $tag)
-                      ->tap($handler => @args);
+  $class->new(session => $session, tag => $tag, args => \@args)
+        ->_register
+        ->tap($handler => @args);
 }
 
+sub _report_cancel ($self) { $self->emit('cancel') }
 
 1;
 

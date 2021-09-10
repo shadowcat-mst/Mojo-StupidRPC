@@ -9,8 +9,8 @@ has outgoing => sub { {} };
 
 sub receive ($self, $type, @msg) {
   state %dispatch = (
-    (map +($_ => '_start_incoming'), qw(cast call listen trap)),
-    (map +($_ => '_cancel_incoming'), qw(unlisten untrap)),
+    (map +($_ => '_start_incoming'), qw(cast call listen wrap)),
+    (map +($_ => '_cancel_incoming'), qw(unlisten unwrap)),
     (map +($_ => '_inform_outgoing'), qw(done fail data notify)),
   );
   if (my $method = $dispatch{$type}) {
@@ -39,10 +39,10 @@ sub cast ($self, @cast) { $self->send(@cast) }
 
 sub call ($self, @start) { $self->_start_outgoing(call => @start) }
 sub listen ($self, @start) { $self->_start_outgoing(listen => @start) }
-sub trap ($self, @start) { $self->_start_outgoing(trap => @start) }
+sub wrap ($self, @start) { $self->_start_outgoing(wrap => @start) }
 
 sub unlisten ($self, $name) { $self->_cancel_outgoing(unlisten => $name) }
-sub untrap ($self, $name) { $self->_cancel_outgoing(untrap => $name) }
+sub unwrap ($self, $name) { $self->_cancel_outgoing(unwrap => $name) }
 
 sub _start_outgoing ($self, $type, @start) {
   _load_my('Outgoing'.ucfirst($type))->start($self, @start);
