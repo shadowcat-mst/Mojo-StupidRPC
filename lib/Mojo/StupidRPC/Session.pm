@@ -8,6 +8,13 @@ with 'Mojo::StupidRPC::HasHandlers';
 has incoming => sub { {} };
 has outgoing => sub { {} };
 
+around new => sub ($orig, $self, @args) {
+  if (@args == 1 and $args[0]->$_isa('Mojo::StupidRPC::HandlerSet')) {
+    @args = (handlers => $args[0]->handlers);
+  }
+  $self->$orig(@args);
+};
+
 sub receive ($self, $type, @msg) {
   state %dispatch = (
     (map +($_ => '_start_incoming'), qw(cast call listen wrap)),
