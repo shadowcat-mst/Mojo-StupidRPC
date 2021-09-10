@@ -1,6 +1,8 @@
 package Mojo::StupidRPC;
 
 use Mojo::StupidRPC::Session;
+use Mojo::StupidRPC::HandlerSet;
+
 use Mojo::StupidRPC::Base -strict;
 
 sub from_stream ($class, $stream, @args) {
@@ -29,6 +31,10 @@ sub from_websocket ($class, $tx, @args) {
     $tx->send({ json => \@send });
   });
   $session
+}
+
+sub handler_set ($class) {
+  Mojo::StupidRPC::HandlerSet->new;
 }
 
 1;
