@@ -101,5 +101,3 @@ my $expect = dumper({
 is(dumper(\%wrap_out), $expect, 'wrap server side return values ok');
 
 done_testing;
-
-1;
