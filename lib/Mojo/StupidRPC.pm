@@ -17,9 +17,10 @@ sub from_stream ($class, $stream, @args) {
     }
     return
   });
-  $session->on(send => sub ($self, @send) {
+  my $cb = $session->on(send => sub ($self, @send) {
     $stream->write(encode_json(\@send)."\n");
   });
+  $stream->on(close => sub { $session->unsubscribe(send => $cb) });
   $session
 }
 
@@ -28,9 +29,10 @@ sub from_websocket ($class, $tx, @args) {
   $tx->on(json => sub ($self, $json) {
     $session->receive(@$json);
   });
-  $session->on(send => sub ($self, @send) {
+  my $cb = $session->on(send => sub ($self, @send) {
     $tx->send({ json => \@send });
   });
+  $tx->on(close => sub { $session->unsubscribe(send => $cb) });
   $session
 }
 

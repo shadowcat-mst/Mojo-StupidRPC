@@ -10,7 +10,7 @@ has args => undef;
 requires 'store_type';
 requires '_send';
 
-sub type ($proto) { (ref($proto) || $proto) =~ /[A-Z][a-z]+$/ }
+sub type ($proto) { (ref($proto) || $proto) =~ /([A-Z][a-z]+)$/; lc($1) }
 
 sub _register ($self) {
   $self->session->${\$self->store_type}->{$self->tag} = $self;

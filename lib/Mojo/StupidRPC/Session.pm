@@ -8,6 +8,8 @@ with 'Mojo::StupidRPC::HasHandlers';
 has incoming => sub { {} };
 has outgoing => sub { {} };
 
+has tag_sequence => undef;
+
 around new => sub ($orig, $self, @args) {
   if (@args == 1 and $args[0]->$_isa('Mojo::StupidRPC::HandlerSet')) {
     @args = (handlers => $args[0]->handlers);
@@ -53,7 +55,9 @@ sub unlisten ($self, $name) { $self->_cancel_outgoing(unlisten => $name) }
 sub unwrap ($self, $name) { $self->_cancel_outgoing(unwrap => $name) }
 
 sub _start_outgoing ($self, $type, @start) {
-  _load_my('Outgoing'.ucfirst($type))->start($self, @start);
+  _load_my('Outgoing'.ucfirst($type))->start(
+    $self, ($self->{tag_sequence} //= 'A001')++, @start
+  );
 }
 
 sub _cancel_outgoing ($self, $type, $name) {
