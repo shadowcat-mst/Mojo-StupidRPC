@@ -9,6 +9,7 @@ use Mojo::StupidRPC::Base -strict;
 my $h = Mojo::StupidRPC::HandlerSet->new;
 
 $h->call(foo => sub ($call, @args) {
+  return $call->fail('no') unless @args;
   $call->done('yes', @args)
 });
 
@@ -24,7 +25,11 @@ $t->websocket_ok('/')
   ->json_message_is([ done => A => yes => 1, 2 ])
   ->send_ok({ json => [ call => A => bar => ] })
   ->message_ok
-  ->json_message_is([ fail => A => undef ]);
+  ->json_message_is([ fail => A => undef ])
+  ->send_ok({ json => [ call => A => foo => ] })
+  ->message_ok
+  ->json_message_is([ fail => A => no => ])
+  ->finish_ok;
 
 done_testing;
 
