@@ -13,6 +13,10 @@ $h->call(foo => sub ($call, @args) {
   $call->done('yes', @args)
 });
 
+$h->call(slow_foo => sub ($call, @) {
+  Mojo::IOLoop->timer(1, sub { $call->done('slow_foo') });
+});
+
 websocket '/' => sub ($c) {
   Mojo::StupidRPC->from_websocket($c, $h);
 };
@@ -29,6 +33,9 @@ $t->websocket_ok('/')
   ->send_ok({ json => [ call => A => foo => ] })
   ->message_ok
   ->json_message_is([ fail => A => no => ])
+  ->send_ok({ json => [ call => A => slow_foo => ] })
+  ->message_ok
+  ->json_message_is([ done => A => 'slow_foo' ])
   ->finish_ok;
 
 done_testing;
