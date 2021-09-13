@@ -1,6 +1,7 @@
 use Mojolicious::Lite;
 use Test::More;
 use Test::Mojo;
+use Mojo::Util qw(dumper);
 use Mojo::StupidRPC::HandlerSet;
 use Mojo::StupidRPC;
 
@@ -57,6 +58,47 @@ $t->websocket_ok('/')
   ->message_ok
   ->json_message_is([ done => A => yes => 1, 2 ])
   ->finish_ok;
+
+my %wrap_out;
+
+$h->wrap(event => sub ($wrap, @) {
+  $wrap->done;
+  foreach my $iter (1 .. 4) {
+    $wrap->call($iter)
+         ->tap(on => done => sub { $wrap_out{$iter}{done}++ })
+         ->tap(on => stop => sub { $wrap_out{$iter}{stop}++ })
+         ->tap(on => next => sub ($, @next) {
+             $wrap_out{$iter}{next} = \@next;
+           });
+  }
+});
+
+$t->websocket_ok('/')
+  ->send_ok({ json => [ wrap => A => 'event' => 'wrapper' => 0 ] })
+  ->message_ok
+  ->json_message_is([ done => 'A' ])
+  ->message_ok
+  ->json_message_is([ call => A001 => wrapper => 0 => 1 ])
+  ->message_ok
+  ->json_message_is([ call => A002 => wrapper => 0 => 2 ])
+  ->message_ok
+  ->json_message_is([ call => A003 => wrapper => 0 => 3 ])
+  ->message_ok
+  ->json_message_is([ call => A004 => wrapper => 0 => 4 ])
+  ->send_ok({ json => [ done => 'A001' ] })
+  ->send_ok({ json => [ done => A002 => 'stop' ] })
+  ->send_ok({ json => [ done => A003 => 'next' ] })
+  ->send_ok({ json => [ done => A004 => 'next' => [ 5 ] ] })
+  ->finish_ok;
+
+my $expect = dumper({
+  1 => { done => 1 },
+  2 => { done => 1, stop => 1 },
+  3 => { done => 1, next => [ 3 ] },
+  4 => { done => 1, next => [ 5 ] },
+});
+
+is(dumper(\%wrap_out), $expect, 'wrap server side return values ok');
 
 done_testing;
 

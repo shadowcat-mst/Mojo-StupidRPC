@@ -12,7 +12,7 @@ sub call ($self, @call) {
        ->tap(on => done => sub ($self, @done) {
            return unless @done;
            $self->emit('stop') if $done[0] eq 'stop';
-           $self->emit(@done) if $done[0] eq 'next';
+           $self->emit(next => @{$done[1]//\@call}) if $done[0] eq 'next';
            return;
          });
 }

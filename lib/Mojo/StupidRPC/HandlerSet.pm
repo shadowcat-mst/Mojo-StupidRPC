@@ -6,6 +6,6 @@ with 'Mojo::StupidRPC::HasHandlers';
 
 sub call { shift->handle_call(@_) }
 sub listen { shift->handle_listen(@_) }
-sub trap { shift->handle_trap(@_) }
+sub wrap { shift->handle_wrap(@_) }
 
 1;
