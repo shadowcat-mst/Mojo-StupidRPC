@@ -6,8 +6,8 @@ has active => 0;
 
 sub name ($self) { $self->tag =~ /:(.*)$/ }
 
-after done => sub ($self, $name, @) {
-  $self->tag(join ':', $self->type, $name);
+after done => sub ($self, @) {
+  $self->tag(join ':', $self->type, $self->name);
   $self->_register;
   $self->active(1);
 };

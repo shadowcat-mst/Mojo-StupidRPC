@@ -38,6 +38,26 @@ $t->websocket_ok('/')
   ->json_message_is([ done => A => 'slow_foo' ])
   ->finish_ok;
 
+$h->listen(ticker => sub ($listen) {
+  $listen->done;
+  my $id = Mojo::IOLoop->recurring(1, sub { $listen->notify('tick') });
+  $listen->on(cancel => sub { Mojo::IOLoop->remove($id) });
+});
+
+$t->websocket_ok('/')
+  ->send_ok({ json => [ listen => A => 'ticker' ] })
+  ->message_ok
+  ->json_message_is([ done => 'A' ])
+  ->message_ok
+  ->json_message_is([ notify => ticker => 'tick' ])
+  ->message_ok
+  ->json_message_is([ notify => ticker => 'tick' ])
+  ->send_ok({ json => [ unlisten => 'ticker' ] })
+  ->send_ok({ json => [ call => A => foo => 1, 2 ] })
+  ->message_ok
+  ->json_message_is([ done => A => yes => 1, 2 ])
+  ->finish_ok;
+
 done_testing;
 
 1;
