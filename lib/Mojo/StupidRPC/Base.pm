@@ -22,7 +22,7 @@ sub import ($me, $base = '-base') {
 }
 
 sub _load_my ($name) {
-  my $package = "Mojo::StupidRPC::${name}";
+  my $package = __PACKAGE__ =~ s/Base$/${name}/r;
   require join('/', split '::', $package).'.pm';
   return $package;
 }
