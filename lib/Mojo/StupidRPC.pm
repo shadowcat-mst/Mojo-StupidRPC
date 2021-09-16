@@ -1,6 +1,7 @@
 package Mojo::StupidRPC;
 
 use Mojo::IOLoop;
+use Mojo::JSON qw(encode_json decode_json);
 use Mojo::StupidRPC::Session;
 use Mojo::StupidRPC::HandlerSet;
 
@@ -40,16 +41,19 @@ sub handler_set ($class) {
   Mojo::StupidRPC::HandlerSet->new;
 }
 
-sub server ($class, $args, $session_args) {
+sub server ($class, $args, $session_args = {}) {
   Mojo::IOLoop->server($args => sub ($loop, $stream, $id) {
     $class->from_stream($stream, $session_args);
   });
 }
 
-sub client ($class, $args, $session_args) {
+sub client_p ($class, $args, $session_args = {}) {
   return $class->ws_client($args, $session_args) unless ref($args);
-  Mojo::IOLoop->client($args => sub ($loop, $err, $stream) {
-    $class->from_stream($stream, $session_args);
+  Mojo::Promise->new->tap(sub ($p) {
+    Mojo::IOLoop->client($args => sub ($loop, $err, $stream) {
+      return $p->reject($err) if defined($err);
+      $p->resolve($class->from_stream($stream, $session_args));
+    });
   });
 }
 
