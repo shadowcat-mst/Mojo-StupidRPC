@@ -25,7 +25,9 @@ sub _unregister ($self) {
 }
 
 sub _request_completed ($self, @) {
-  $self->_unregister->request_complete(1);
+  $self->_unregister
+       ->request_complete(1)
+       ->tap(sub ($self) { $self->emit('complete') if $self->can('emit') });
 }
 
 sub data ($self, @data) {
