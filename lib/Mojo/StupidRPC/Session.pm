@@ -47,14 +47,15 @@ sub _cancel_incoming ($self, $type, $name) {
   $self->incoming->{join(':', $type, $name)}->cancel;
 }
 
-sub _inform_outgoing ($self, $type, $protocol_tag, @data) {
-  my $outgoing = $self->outgoing->{join(':', call => $protocol_tag)};
+sub _inform_outgoing ($self, $method, $protocol_tag, @data) {
+  my $type = ($method eq 'notify' ? 'listen' : 'call');
+  my $outgoing = $self->outgoing->{join(':', $type, $protocol_tag)};
   unless ($outgoing) {
     die
-      "Unable to find live call for ${protocol_tag}, "
+      "Unable to find live ${type} for ${protocol_tag}, "
       ."current candidates are: ".join(', ', sort keys %{$self->outgoing});
   }
-  $outgoing->$type(@data);
+  $outgoing->$method(@data);
 }
 
 sub send ($self, @send) { $self->emit(send => @send) }
