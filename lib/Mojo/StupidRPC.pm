@@ -14,7 +14,9 @@ sub from_stream ($class, $stream, @args) {
     $buf .= $read;
     while ($buf =~ s/^(.*)\r?\n//ms) {
       my $line = $1;
-      $session->receive(@{decode_json($line)});
+      unless (eval { $session->receive(@{decode_json($line)}); 1 }) {
+        die "Receive fail handling <<${line}>>: $@";
+      }
     }
     return
   });
