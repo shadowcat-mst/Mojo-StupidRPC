@@ -21,5 +21,4 @@ sub _report_cancel ($self) {
   $self->session->send('un'.$self->type, $self->name);
 }
 
-
 1;
