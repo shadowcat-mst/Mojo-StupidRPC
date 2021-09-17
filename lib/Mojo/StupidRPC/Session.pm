@@ -83,7 +83,13 @@ sub _start_outgoing ($self, $type, $name, @args) {
 
 sub _cancel_outgoing ($self, $type, $name) {
   $type =~ s/^un//;
-  $self->outgoing->{join(':', $type, $name)}->cancel;
+  my $outgoing = $self->outgoing->{join(':', $type, $name)};
+  unless ($outgoing) {
+    die
+      "Unable to find live ${type} for ${name}, "
+      ."current candidates are: ".join(', ', sort keys %{$self->outgoing});
+  }
+  $outgoing->cancel;
 }
 
 1;
