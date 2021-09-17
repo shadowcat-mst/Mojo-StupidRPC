@@ -6,6 +6,6 @@ with 'Mojo::StupidRPC::Outgoing';
 with 'Mojo::StupidRPC::IsCall';
 with 'Mojo::StupidRPC::BecomesActive';
 
-sub notify ($self, @notify) { $self->emit(notify => @notify) }
+sub notify ($self, @notify) { $self->emit(notify => $self->name => @notify) }
 
 1;
