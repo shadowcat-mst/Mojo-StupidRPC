@@ -45,6 +45,7 @@ sub handler_set ($class) {
 
 sub server ($class, $args, $session_args = {}) {
   Mojo::IOLoop->server($args => sub ($loop, $stream, $id) {
+    $stream->timeout(0);
     $class->from_stream($stream, $session_args);
   });
 }
@@ -54,6 +55,7 @@ sub client_p ($class, $args, $session_args = {}) {
   Mojo::Promise->new->tap(sub ($p) {
     Mojo::IOLoop->client($args => sub ($loop, $err, $stream) {
       return $p->reject($err) if defined($err);
+      $stream->timeout(0);
       $p->resolve($class->from_stream($stream, $session_args));
     });
   });
