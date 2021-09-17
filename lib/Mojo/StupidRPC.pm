@@ -12,7 +12,7 @@ sub from_stream ($class, $stream, @args) {
   my $buf = '';
   $stream->on(read => sub ($self, $read) {
     $buf .= $read;
-    while ($buf =~ s/^(.*)\r?\n//ms) {
+    while ($buf =~ s/^(.*)\r?\n//m) {
       my $line = $1;
       unless (eval { $session->receive(@{decode_json($line)}); 1 }) {
         die "Receive fail handling <<${line}>>: $@";
