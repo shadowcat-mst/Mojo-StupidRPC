@@ -2,24 +2,19 @@ package Mojo::StupidRPC::Incoming;
 
 use Mojo::StupidRPC::Base -role;
 
-has 'name';
-
 sub store_type { 'incoming' }
 
 sub _send ($self, $type, @payload) {
-  $self->session->send($type => $self->tag => @payload);
+  $self->session->send($type => $self->protocol_tag => @payload);
   $self
 }
 
-sub start ($class, $session, $tag, $name, @args) {
-  die "Tag ${tag} in use" if $session->incoming->{$tag};
+sub start ($self) {
+  return $self->_send(fail => undef)
+    unless my $handler = $self->session->handlers->{$self->type}{$self->name};
 
-  return $session->send(fail => $tag => undef)
-    unless my $handler = $session->handlers->{$class->type}{$name};
-
-  $class->new(session => $session, name => $name, tag => $tag, args => \@args)
-        ->_register
-        ->tap($handler => @args);
+  $self->_register
+       ->tap($handler => @{$self->args});
 }
 
 sub _report_cancel ($self) { $self->emit('cancel') }

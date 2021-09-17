@@ -2,9 +2,11 @@ package Mojo::StupidRPC::IsCall;
 
 use Mojo::StupidRPC::Base -role;
 
-has tag => undef;
+has protocol_tag => undef;
+has store_tag => undef;
 has session => undef, weak => 1;
 has request_complete => 0;
+has name => undef;
 has args => undef;
 
 requires 'store_type';
@@ -13,12 +15,12 @@ requires '_send';
 sub type ($proto) { (ref($proto) || $proto) =~ /([A-Z][a-z]+)$/; lc($1) }
 
 sub _register ($self) {
-  $self->session->${\$self->store_type}->{$self->tag} = $self;
+  $self->session->${\$self->store_type}->{$self->store_tag} = $self;
   $self
 }
 
 sub _unregister ($self) {
-  delete $self->session->${\$self->store_type}->{$self->tag};
+  delete $self->session->${\$self->store_type}->{$self->store_tag};
   $self
 }
 

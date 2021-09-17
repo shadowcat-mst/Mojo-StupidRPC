@@ -30,8 +30,16 @@ sub receive ($self, $type, @msg) {
   }
 }
 
-sub _start_incoming ($self, $type, @start) {
-  _load_my('Incoming'.ucfirst($type))->start($self, @start);
+sub _start_incoming ($self, $type, $tag, $name, @args) {
+  my $store_tag = join(':', call => $tag);
+  die "Tag ${tag} in use" if $self->outgoing->{$store_tag};
+  _load_my('Incoming'.ucfirst($type))->new(
+    store_tag => $store_tag,
+    protocol_tag => $tag,
+    session => $self,
+    name => $name,
+    args => \@args,
+  )->start;
 }
 
 sub _cancel_incoming ($self, $type, $name) {
@@ -39,8 +47,14 @@ sub _cancel_incoming ($self, $type, $name) {
   $self->incoming->{join(':', $type, $name)}->cancel;
 }
 
-sub _inform_outgoing ($self, $type, $tag, @data) {
-  $self->outgoing->{$tag}->$type(@data);
+sub _inform_outgoing ($self, $type, $protocol_tag, @data) {
+  my $outgoing = $self->outgoing->{join(':', call => $protocol_tag)};
+  unless ($outgoing) {
+    die
+      "Unable to find live call for ${protocol_tag}, "
+      ."current candidates are: ".join(', ', sort keys %{$self->outgoing});
+  }
+  $outgoing->$type(@data);
 }
 
 sub send ($self, @send) { $self->emit(send => @send) }
@@ -54,10 +68,17 @@ sub wrap ($self, @start) { $self->_start_outgoing(wrap => @start) }
 sub unlisten ($self, $name) { $self->_cancel_outgoing(unlisten => $name) }
 sub unwrap ($self, $name) { $self->_cancel_outgoing(unwrap => $name) }
 
-sub _start_outgoing ($self, $type, @start) {
-  _load_my('Outgoing'.ucfirst($type))->start(
-    $self, ($self->{tag_sequence} //= 'A001')++, @start
-  );
+sub _start_outgoing ($self, $type, $name, @args) {
+  my $tag = ($self->{tag_sequence} //= 'A001')++;
+  my $store_tag = join(':', call => $tag);
+  die "Tag ${tag} in use" if $self->outgoing->{$store_tag};
+  _load_my('Outgoing'.ucfirst($type))->new(
+    store_tag => $store_tag,
+    protocol_tag => $tag,
+    session => $self,
+    name => $name,
+    args => \@args,
+  )->start;
 }
 
 sub _cancel_outgoing ($self, $type, $name) {

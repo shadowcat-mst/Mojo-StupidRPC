@@ -6,12 +6,15 @@ sub store_type { 'outgoing' }
 
 sub _send { shift->emit(@_) }
 
-sub start ($class, $session, $tag, @start) {
-  my \%tags = $session->outgoing;
-  die "Tag ${tag} in use" if $tags{$tag};
-  $session->send($class->type, $tag, @start);
-  $class->new(session => $session, tag => $tag)
-        ->_register;
+sub start ($self) {
+  $self->session->send(
+    $self->type,
+    $self->protocol_tag,
+    $self->name,
+    @{$self->args}
+  );
+  $self->_register;
+  $self;
 }
 
 sub _report_cancel ($self) {
