@@ -1,4 +1,4 @@
-package Mojo::StupidRPC::IsCall;
+package Mojo::StupidRPC::Request;
 
 use Mojo::StupidRPC::Base -role;
 

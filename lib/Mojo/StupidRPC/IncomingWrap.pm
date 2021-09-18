@@ -3,7 +3,7 @@ package Mojo::StupidRPC::IncomingWrap;
 use Mojo::StupidRPC::Base 'Mojo::EventEmitter';
 
 with 'Mojo::StupidRPC::Incoming';
-with 'Mojo::StupidRPC::IsCall';
+with 'Mojo::StupidRPC::Request';
 with 'Mojo::StupidRPC::BecomesActive';
 
 sub call ($self, @call) {

@@ -3,7 +3,7 @@ package Mojo::StupidRPC::IncomingCast;
 use Mojo::StupidRPC::Base;
 
 with 'Mojo::StupidRPC::Incoming';
-with 'Mojo::StupidRPC::IsCall';
+with 'Mojo::StupidRPC::Request';
 
 sub _send { }
 
